@@ -5,6 +5,16 @@ import axios from 'axios';
 import { render } from 'react-dom';
 
 import { Button, ButtonGroup, HStack, Input, Stack } from "@chakra-ui/react"
+import {
+    Table,
+    Thead,
+    Tbody,
+    Tfoot,
+    Tr,
+    Th,
+    Td,
+    TableCaption,
+  } from "@chakra-ui/react"
 
 function AddBook(props){
   
@@ -118,24 +128,24 @@ function BookList() {
     <div className="App container">
     
      
-      <table>
-        <thead>
-          <tr>
-            <th>Id</th>
-            <th>Title</th>
-            <th>ISBNNo</th>
-            <th>Author</th>
-            <th>Series</th>
-            <th>Genre</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+    <Table variant="simple">
+        <Thead>
+          <Tr>
+            <Th>Id</Th>
+            <Th>Title</Th>
+            <Th>ISBNNo</Th>
+            <Th>Author</Th>
+            <Th>Series</Th>
+            <Th>Genre</Th>
+            <Th>Actions</Th>
+          </Tr>
+        </Thead>
 
-        <tbody>
+        <Tbody>
           {books}
-        </tbody>
+        </Tbody>
 
-      </table>
+      </Table>
      
      );
     </div>
