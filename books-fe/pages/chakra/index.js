@@ -4,6 +4,7 @@ import { Modal } from 'reactstrap';
 import axios from 'axios';
 import { render } from 'react-dom';
 
+import { Button, ButtonGroup, HStack, Input, Stack } from "@chakra-ui/react"
 
 function AddBook(props){
   
@@ -33,15 +34,17 @@ function AddBook(props){
 
   return(
     <form >
-    <label for="id">ID</label>
-    <input  type="int" value={id} onChange={e=>setId(e.target.value)} name="id"/>
-    <label for="title">TITLE</label>
-    <input id="title" type="text" value={title} onChange={e=>setTitle(e.target.value)} name="title"></input>
-    <label for="isbnno">ISBNNo</label>
-    <input id="isbnno" type="text" value={isbnNo} onChange={e=>setISBNo(e.target.value)} name="isbno"></input>
-    <label for="series">SERIES</label>
-    <input id="series" type="text" value={series} onChange={e=>setSeries(e.target.value)} name="series"></input>
-    <button onClick={handleAddBook}>AddBook</button>
+    <Stack spacing={3}>
+    <Input variant="outline" placeholder="ID"   type="int" value={id} onChange={e=>setId(e.target.value)} name="id"/>
+    <Input variant="outline" placeholder="TITLE"  type="text" value={title} onChange={e=>setTitle(e.target.value)} name="title"/>
+   
+    <Input variant="outline" placeholder="ISBNNo"   value={isbnNo} onChange={e=>setISBNo(e.target.value)} name="isbno"/>
+  
+    <Input variant="outline" placeholder="SERIES"   onChange={e=>setSeries(e.target.value)} name="series"/>
+    
+    
+    <Button onClick={handleAddBook} iconSpacing="-1" size="sm" colorScheme="blue">Add</Button>
+    </Stack>
    </form>
   )
 }
@@ -76,10 +79,10 @@ function Book(props) {
       <td>{book.Series}</td>
       <td>{book.Genre}</td>
       <td>
-
-        <button  size="sm">UPDATE</button>
-        <button onClick={handleDelete} size="sm">DELETE</button>
-
+      <HStack spacing="24px">
+        <Button size="sm" colorScheme="blue">UPDATE</Button>
+        <Button onClick={handleDelete} iconSpacing="-1" size="sm" colorScheme="blue">DELETE</Button>
+     </HStack>
       </td>
     </tr>
 

@@ -181,10 +181,10 @@ func main() {
 	fmt.Println("Connected!")
 
 	er := libraryservice.NewBook(Book{
-		Id:     14,
-		Title:  "Sun",
-		ISBNno: "A3",
-		Author: "lop",
+		Id:     1,
+		Title:  "Moon",
+		ISBNno: "CH1",
+		Author: "WD",
 
 		Series:     "CC",
 		Launchdate: time.Now(),
