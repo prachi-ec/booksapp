@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	_ "fmt"
@@ -75,7 +74,7 @@ func (transport *httptransport) BookID(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusFound)
+	w.WriteHeader(http.StatusOK)
 	w.Write(js)
 
 }
@@ -163,24 +162,21 @@ func setupRoutes(t *httptransport) {
 
 func main() {
 
-	//database
-	// connection string
-	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	//psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
-	// open database
-	db, err := sql.Open("postgres", psqlconn)
-	if err != nil {
-		fmt.Println("Error while connecting to Database: ", err)
-	}
+	// db, err := sql.Open("postgres", psqlconn)
+	// if err != nil {
+	// 	fmt.Println("Error while connecting to Database: ", err)
+	// }
 
 	var (
-		repo           = NewBookRepo()
-		pgrepo         = NewPostgresBook(db)
-		libraryservice = NewBookLibraryServices(pgrepo)
+		repo = NewBookRepo()
+		//pgrepo         = NewPostgresBook(db)
+		libraryservice = NewBookLibraryServices(repo)
 		tr             = NewHTTPTransport(libraryservice)
 	)
 
-	defer db.Close()
+	//defer db.Close()
 
 	fmt.Println("Connected!")
 

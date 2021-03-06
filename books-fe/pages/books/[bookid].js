@@ -46,10 +46,15 @@ const EditBook = () => {
   const router = useRouter()
   const { bookid } = router.query
 
+  if (!bookid){
+    console.log("loading")
+    return "Loading ID"
+  }
+
   const [book, setBook] = useState(undefined)
 
   useEffect(()=>{
-  if (bookid){
+  
     axios.get(`/api/books/${bookid}`)
     .then(response=>
       {
@@ -57,7 +62,7 @@ const EditBook = () => {
         console.log(response)
       })
    .catch(e=>console.log("err: ",e))
-  }
+  
   }, [bookid])
 
   
@@ -65,7 +70,7 @@ const EditBook = () => {
   if(!book){ 
     return "loading"
   }
-  return <p><UpdateBook book={book}/>: {bookid}</p>
+  return <UpdateBook book={book}/>
 }
 
 export default EditBook
