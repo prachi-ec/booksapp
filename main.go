@@ -9,10 +9,12 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	_ "github.com/lib/pq"
 )
 
 func Homepage(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "This is my homepage")
 
 }
@@ -126,11 +128,24 @@ func NewHTTPTransport(l BookLibrary) *httptransport {
 }
 
 type httptransport struct {
-	service BookLibrary
+	service  BookLibrary
+	upgrader websocket.Upgrader
+}
+
+func (transport *httptransport) handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	conn, err := transport.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("error upgrading web socket connection", err)
+		return
+	}
+
+	defer conn.Close()
+
+	conn.WriteMessage(websocket.TextMessage, []byte("Connection to ws made"))
 }
 
 func notfoundhandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.RequestURI)
+	log.Println("not found", r.RequestURI)
 
 }
 
@@ -147,13 +162,18 @@ func setupRoutes(t *httptransport) {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", Homepage).Methods("GET")
+	// r.HandleFunc("/", Homepage).Methods("GET")
 	r.HandleFunc("/books", t.AddBook).Methods("POST")
 	r.HandleFunc("/books", t.Bookshow).Methods("GET")
 	r.HandleFunc("/books/{id}", t.BookID).Methods("GET")
 	r.HandleFunc("/books/{id}", t.UpdateBook).Methods("PATCH")
 	r.HandleFunc("/books/{id}", t.DeleteBook).Methods("DELETE")
 	r.NotFoundHandler = http.HandlerFunc(notfoundhandler)
+
+	r.HandleFunc("/ws", t.handleWebSocket).Methods("GET")
+
+	r.PathPrefix("/web/").Handler(http.StripPrefix("/web/", http.FileServer(http.Dir("static"))))
+
 	http.Handle("/", r)
 	r.Use(loggingMiddleware)
 }
