@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	_ "fmt"
-
 	"log"
 	"net/http"
 	"strconv"

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Modal } from 'reactstrap';
+import { Label, Modal } from 'reactstrap';
 
 import axios from 'axios';
 import { render } from 'react-dom';
 
-import { Button, ButtonGroup, HStack, Input, Stack, AspectRatio, Center, Square } from "@chakra-ui/react"
+import { Button, ButtonGroup, HStack, Input, Stack, AspectRatio, Center, Square, Tooltip, Box } from "@chakra-ui/react"
 import {
     Table,
     Thead,
@@ -14,6 +14,11 @@ import {
     Th,
     Td,
     TableCaption,
+    Slider,
+    SliderTrack,
+    SliderFilledTrack,
+    SliderThumb,
+    Text,
 
     NumberInput,
     NumberInputField,
@@ -29,6 +34,7 @@ function AddBook(props) {
     const [title, setTitle] = useState()
     const [isbnNo, setISBNo] = useState()
     const [series, setSeries] = useState()
+    const [rating, setRating] = useState()
 
     function handleAddBook(e) {
         e.preventDefault()
@@ -39,12 +45,11 @@ function AddBook(props) {
             "Author": "",
             "Series": series,
             "Genre": "",
-            "Rating": 3.8,
+            "Rating": rating,
 
         }).then(r => console.log("msg: ", r))
             .catch(e => console.log("err: ", e))
         console.log("add", id, title, isbnNo, series)
-
     }
 
 
@@ -70,8 +75,20 @@ function AddBook(props) {
 
                         <Input variant="outline" placeholder="ISBNNo" value={isbnNo} onChange={e => setISBNo(e.target.value)} name="isbno" />
 
-                        <Input variant="outline" placeholder="SERIES" onChange={e => setSeries(e.target.value)} name="series" />
+                        <Input variant="outline" placeholder="SERIES" value={series} onChange={e => setSeries(e.target.value)} name="series" />
 
+                        <Text>RATING</Text>
+                        <Tooltip label={rating} aria-label="A tooltip">
+                                                    
+                                            
+                        <Slider aria-label="slider-ex-5" value={rating} focusThumbOnChange={false}>
+                            <SliderTrack bg="red.100">
+                            <Box position="relative" right={10} />
+                            <SliderFilledTrack bg="tomato" />
+                            </SliderTrack>
+                            <SliderThumb boxSize={6} />
+                        </Slider>
+                        </Tooltip>
 
                         <Button onClick={handleAddBook} iconSpacing="-1" size="sm" colorScheme="teal">Add</Button>
 
@@ -112,6 +129,7 @@ function Book(props) {
             <td>{book.Author}</td>
             <td>{book.Series}</td>
             <td>{book.Genre}</td>
+            <td>{book.Rating}</td>
             <td>
                 <HStack spacing="24px">
                     <Button size="sm" colorScheme="teal">UPDATE</Button>
@@ -161,11 +179,12 @@ function BookList() {
                         <Th>Author</Th>
                         <Th>Series</Th>
                         <Th>Genre</Th>
+                        <Th>Rating</Th>
                         <Th>Actions</Th>
                     </Tr>
                 </Thead>
 
-                <Tbody>
+                <Tbody alignContent="space-between">
                     {books}
                 </Tbody>
 
