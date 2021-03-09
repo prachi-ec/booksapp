@@ -167,8 +167,9 @@ function BookList() {
     let books = launchedBooks.map((book) => (<Book book={book} />));
 
     return (
+        
         <div className="App container">
-
+            <meta http-equiv="refresh" content="10;url=http://localhost:3000/chakra" />
 
             <Table colorScheme="purple" variant="simple" border="1px solid #605D5D"   >
                 <Thead>

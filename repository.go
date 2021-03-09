@@ -25,12 +25,13 @@ type BookLibrary interface {
 	Delete(Id int) error
 }
 
-func NewBookLibraryServices(repo BookRepo) *BookLibraryServices {
-	return &BookLibraryServices{repo: repo}
+func NewBookLibraryServices(repo BookRepo, noti UpdateNotifier) *BookLibraryServices {
+	return &BookLibraryServices{repo: repo, notifier: noti}
 }
 
 type BookLibraryServices struct {
-	repo BookRepo
+	repo     BookRepo
+	notifier UpdateNotifier
 }
 
 func (lib *BookLibraryServices) NewBook(book Book) error {
@@ -39,7 +40,12 @@ func (lib *BookLibraryServices) NewBook(book Book) error {
 		return errors.New("Invalid Book ID")
 	}
 
-	return lib.repo.CreateBook(book)
+	if err := lib.repo.CreateBook(book); err != nil {
+		return err
+	}
+
+	lib.notifier.Notify()
+	return nil
 
 }
 
@@ -49,6 +55,7 @@ func (lib *BookLibraryServices) Book(Id int) (Book, error) {
 }
 
 func (lib *BookLibraryServices) Books() []Book {
+
 	return lib.repo.LaunchedBooks()
 }
 
@@ -78,6 +85,7 @@ func NewBookRepo() *BookRepoMemory {
 
 func (repo *BookRepoMemory) CreateBook(book Book) error {
 	if _, exists := repo.books[book.Id]; exists {
+
 		return errors.New("Book Already Present in Data!!")
 	}
 
@@ -121,9 +129,14 @@ func (repo *BookRepoMemory) Update(book Book) error {
 
 func (repo *BookRepoMemory) Delete(Id int) error {
 	if Id == 0 {
+
 		return errors.New("Invalid ID!!!")
 	}
 
 	delete(repo.books, Id)
 	return nil
+}
+
+func (repo *BookRepoMemory) Notify() {
+	return
 }

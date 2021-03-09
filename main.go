@@ -132,6 +132,17 @@ type httptransport struct {
 	upgrader websocket.Upgrader
 }
 
+type UpdateNotifier interface {
+	Notify()
+}
+
+type noOpNotifier struct {
+}
+
+func (noOp noOpNotifier) Notify() {
+	fmt.Println("Notification")
+}
+
 func (transport *httptransport) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := transport.upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -139,9 +150,20 @@ func (transport *httptransport) handleWebSocket(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	tick := time.NewTicker(time.Second * 5)
+
 	defer conn.Close()
 
-	conn.WriteMessage(websocket.TextMessage, []byte("Connection to ws made"))
+	for range tick.C {
+
+		books := transport.service.Books()
+		if err := conn.WriteJSON(books); err != nil {
+			log.Println("error while writing to json:", err)
+			return
+		}
+
+	}
+
 }
 
 func notfoundhandler(w http.ResponseWriter, r *http.Request) {
@@ -188,9 +210,10 @@ func main() {
 	// }
 
 	var (
+		noOp = noOpNotifier{}
 		repo = NewBookRepo()
 		//pgrepo         = NewPostgresBook(db)
-		libraryservice = NewBookLibraryServices(repo)
+		libraryservice = NewBookLibraryServices(repo, noOp)
 		tr             = NewHTTPTransport(libraryservice)
 	)
 
@@ -219,6 +242,21 @@ func main() {
 
 	//Server Side
 	fmt.Println(("Server up and Running!!"))
+
+	// staticDir := http.Dir("wsstatic")
+
+	// {
+	// 	f, err := staticDir.Open("index.html")
+	// 	fmt.Println(err)
+	// 	bs, err := io.ReadAll(f)
+	// 	fmt.Println(err)
+
+	// 	fmt.Println(string(bs))
+	// }
+	// fs := http.FileServer(staticDir)
+	// http.Handle("/web", fs)
+
+	_ = tr
 	setupRoutes(tr)
 	log.Fatal(http.ListenAndServe(":8088", nil))
 	//Database
