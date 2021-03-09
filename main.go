@@ -121,8 +121,6 @@ func (transport *httptransport) DeleteBook(w http.ResponseWriter, r *http.Reques
 
 }
 
-// { "id" : "32" , "title": "Treasure Island", "ISBNno":  "4AB234", "Author":  "DK", "Series": "", "Launchdate": "01/02/2021", "Genre": "Fiction", "Rating": "4.8"}
-
 func NewHTTPTransport(l BookLibrary) *httptransport {
 	return &httptransport{service: l}
 }
@@ -132,23 +130,24 @@ type httptransport struct {
 	upgrader websocket.Upgrader
 }
 
-type UpdateNotifier interface {
-	Notify()
-}
+func (transport *httptransport) handleWebSocket(pool *Pool, w http.ResponseWriter, r *http.Request) {
 
-type noOpNotifier struct {
-}
-
-func (noOp noOpNotifier) Notify() {
-	fmt.Println("Notification")
-}
-
-func (transport *httptransport) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := transport.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("error upgrading web socket connection", err)
 		return
 	}
+
+	defer conn.Close()
+
+	client := &Client{
+		ID:   conn.RemoteAddr().String(),
+		Conn: conn,
+		Pool: pool,
+	}
+
+	pool.Register <- client
+	go client.Read()
 
 	tick := time.NewTicker(time.Second * 5)
 
@@ -163,7 +162,6 @@ func (transport *httptransport) handleWebSocket(w http.ResponseWriter, r *http.R
 		}
 
 	}
-
 }
 
 func notfoundhandler(w http.ResponseWriter, r *http.Request) {
@@ -183,6 +181,8 @@ func loggingMiddleware(next http.Handler) http.Handler {
 func setupRoutes(t *httptransport) {
 
 	r := mux.NewRouter()
+	pool := NewPool()
+	go pool.Start()
 
 	// r.HandleFunc("/", Homepage).Methods("GET")
 	r.HandleFunc("/books", t.AddBook).Methods("POST")
@@ -192,7 +192,7 @@ func setupRoutes(t *httptransport) {
 	r.HandleFunc("/books/{id}", t.DeleteBook).Methods("DELETE")
 	r.NotFoundHandler = http.HandlerFunc(notfoundhandler)
 
-	r.HandleFunc("/ws", t.handleWebSocket).Methods("GET")
+	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) { t.handleWebSocket(pool, w, r) }).Methods("GET")
 
 	r.PathPrefix("/web/").Handler(http.StripPrefix("/web/", http.FileServer(http.Dir("static"))))
 
@@ -234,7 +234,7 @@ func main() {
 	})
 
 	if er != nil {
-		fmt.Println("Error while dealing with librayr service: ", er)
+		fmt.Println("Error while dealing with library service: ", er)
 	}
 	books := libraryservice.Books()
 	fmt.Println(books)
@@ -242,21 +242,6 @@ func main() {
 
 	//Server Side
 	fmt.Println(("Server up and Running!!"))
-
-	// staticDir := http.Dir("wsstatic")
-
-	// {
-	// 	f, err := staticDir.Open("index.html")
-	// 	fmt.Println(err)
-	// 	bs, err := io.ReadAll(f)
-	// 	fmt.Println(err)
-
-	// 	fmt.Println(string(bs))
-	// }
-	// fs := http.FileServer(staticDir)
-	// http.Handle("/web", fs)
-
-	_ = tr
 	setupRoutes(tr)
 	log.Fatal(http.ListenAndServe(":8088", nil))
 	//Database

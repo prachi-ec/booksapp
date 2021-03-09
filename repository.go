@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-
+	"fmt"
 	"time"
 )
 
@@ -15,6 +15,17 @@ type Book struct {
 	Genre      string
 	Rating     float32
 	Launchdate time.Time `json:"LaunchDate,omitempty"`
+}
+
+type UpdateNotifier interface {
+	Notify()
+}
+
+type noOpNotifier struct {
+}
+
+func (noOp noOpNotifier) Notify() {
+	fmt.Println("Notification: New request initiated")
 }
 
 type BookLibrary interface {

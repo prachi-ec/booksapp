@@ -198,10 +198,11 @@ function BookList() {
 }
 
 export default function Home() {
+
     return (
-        <>
-            <BookList />
-            <AddBook />
+       <>
+        <BookList/>
+        <AddBook />
         </>
     )
 }
